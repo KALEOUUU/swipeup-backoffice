@@ -1,0 +1,33 @@
+meta {
+  name: Remove from Cart
+  type: http
+  seq: 4
+}
+
+delete {
+  url: http://localhost:8080/api/cart/1
+  body: none
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+}
+
+docs {
+  # Remove Item from Cart
+
+  Removes a specific item from the cart.
+
+  ## URL Parameters:
+  - `id`: Cart item ID to remove
+
+  ## Behavior:
+  - Permanently deletes cart item
+  - Validates that cart item exists
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Update Diskon
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8080/api/diskon/1
+  body: json
+}
+
+body:json {
+  {
+    "nama_diskon": "Diskon Akhir Bulan Updated",
+    "persentase_diskon": 15,
+    "tanggal_awal": "2025-01-31T00:00:00Z",
+    "tanggal_akhir": "2025-03-31T23:59:59Z"
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+}

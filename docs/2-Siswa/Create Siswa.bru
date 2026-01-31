@@ -1,0 +1,61 @@
+meta {
+  name: Create Siswa
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/api/siswa
+  body: json
+}
+
+body:json {
+  {
+    "nama_siswa": "Budi Santoso",
+    "alamat": "Jl. Merdeka No. 123",
+    "telp": "081234567890",
+    "id_user": 1,
+    "foto": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+  }
+}
+
+docs {
+  # Create Siswa with Base64 Image
+  
+  ## Image Field (foto)
+  The `foto` field accepts:
+  - Base64 encoded image string with data URI format: `data:image/png;base64,<base64_string>`
+  - Base64 encoded image string without data URI: `<base64_string>`
+  - Regular URL (backward compatible): `https://example.com/photo.jpg`
+  
+  ## Supported Image Formats
+  - PNG
+  - JPEG/JPG
+  - GIF
+  - WebP
+  
+  ## Image Storage
+  When base64 is provided:
+  - Image is decoded and saved to filesystem
+  - Unique filename is generated (UUID)
+  - Path is stored in database: `uploads/images/<uuid>.<ext>`
+  - Image accessible via: `http://localhost:8080/uploads/images/<uuid>.<ext>`
+}
+
+tests {
+  test("Status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Response data has ID", function() {
+    expect(res.getBody().data.id).to.exist;
+  });
+  
+  test("Nama Siswa matches request", function() {
+    expect(res.getBody().data.nama_siswa).to.equal("Budi Santoso");
+  });
+}

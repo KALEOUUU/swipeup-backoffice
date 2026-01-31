@@ -1,0 +1,33 @@
+meta {
+  name: Activity Logs
+  type: folder
+}
+
+docs {
+  # Activity Logs API
+
+  Track and retrieve user activities in the Kantin POS system.
+
+  ## Overview
+  The Activity Logs API provides endpoints to track user actions, retrieve activity history, and generate statistics. This is essential for:
+  - User behavior analysis
+  - Security monitoring
+  - Audit trails
+  - Mobile app activity tracking
+
+  ## Common Actions Tracked
+  - `login`: User authentication
+  - `logout`: User session end
+  - `add_to_cart`: Item added to cart
+  - `remove_from_cart`: Item removed from cart
+  - `checkout`: Transaction completed
+  - `view_menu`: Menu browsing
+  - `search_menu`: Menu search
+  - `update_profile`: Profile modification
+
+  ## Authentication
+  All endpoints require Bearer token authentication.
+
+  ## Rate Limiting
+  Consider implementing rate limiting for activity log endpoints to prevent abuse.
+}

@@ -1,0 +1,57 @@
+meta {
+  name: Get User Activities
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/api/activity-logs/user?user_id=1&limit=10&offset=0
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+
+  test("Response has data array", function() {
+    expect(res.getBody().data).to.be.an('array');
+  });
+
+  test("Response has count", function() {
+    expect(res.getBody().count).to.be.a('number');
+  });
+}
+
+docs {
+  # Get User Activities
+
+  Retrieves activity logs for a specific user.
+
+  ## Query Parameters:
+  - `user_id` (required): ID of the user
+  - `limit` (optional): Maximum number of activities to return (default: 50)
+  - `offset` (optional): Number of activities to skip (default: 0)
+
+  ## Response Data:
+  Array of activity log objects containing:
+  - `id`: Activity log ID
+  - `id_user`: User ID
+  - `action`: Action performed (login, add_to_cart, etc.)
+  - `description`: Detailed description of the activity
+  - `ip_address`: Client IP address
+  - `user_agent`: Browser/client user agent
+  - `created_at`: Timestamp of activity
+  - `user`: User information (username, role, etc.)
+
+  ## Usage:
+  Use this endpoint to track user behavior and activity history.
+}

@@ -1,0 +1,39 @@
+meta {
+  name: Update Siswa
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://localhost:8080/api/siswa/1
+  body: json
+}
+
+body:json {
+  {
+    "nama_siswa": "Budi Santoso Updated",
+    "alamat": "Jl. Merdeka No. 456",
+    "telp": "081234567891",
+    "foto": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+  }
+}
+
+docs {
+  # Update Siswa with Base64 Image
+  
+  ## Notes
+  - Only include fields you want to update
+  - Old image will be automatically deleted when updating foto field with new base64 image
+  - If foto field is omitted, existing photo remains unchanged
+  - Base64 image format: `data:image/<type>;base64,<base64_string>` or just `<base64_string>`
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+}

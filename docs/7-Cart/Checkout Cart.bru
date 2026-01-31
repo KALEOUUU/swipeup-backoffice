@@ -1,0 +1,59 @@
+meta {
+  name: Checkout Cart
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8080/api/cart/checkout
+  body: json
+}
+
+body:json {
+  {
+    "siswa_id": 1,
+    "stan_id": 1
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+
+  test("Response has transaction data", function() {
+    expect(res.getBody().data.transaksi).to.exist;
+  });
+
+  test("Response has details array", function() {
+    expect(res.getBody().data.details).to.be.an('array');
+  });
+}
+
+docs {
+  # Checkout Cart (Convert to Transaction)
+
+  Converts cart items to transaction details and clears the cart.
+
+  ## Request Body:
+  - `siswa_id` (required): Siswa ID who is checking out
+  - `stan_id` (required): Stan ID where order is placed
+
+  ## Response Data:
+  - `transaksi`: Transaction object with status "belum dikonfirm"
+  - `details`: Array of DetailTransaksi objects
+  - `message`: Instructions for next step
+
+  ## Behavior:
+  - Converts all cart items to transaction details
+  - Automatically clears cart after conversion
+  - Returns data ready for transaction creation
+  - Validates cart is not empty
+
+  ## Next Step:
+  Use the returned `transaksi` and `details` to create actual transaction via `/api/transaksi` endpoint.
+}

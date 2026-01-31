@@ -1,0 +1,46 @@
+meta {
+  name: Get Activities by Date Range
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:8080/api/activity-logs/date-range?start_date=2024-01-01&end_date=2024-01-31&limit=50&offset=0
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+
+  test("Response has data array", function() {
+    expect(res.getBody().data).to.be.an('array');
+  });
+}
+
+docs {
+  # Get Activities by Date Range
+
+  Retrieves activity logs within a specific date range.
+
+  ## Query Parameters:
+  - `start_date` (required): Start date in YYYY-MM-DD format
+  - `end_date` (required): End date in YYYY-MM-DD format
+  - `limit` (optional): Maximum number of activities to return (default: 50)
+  - `offset` (optional): Number of activities to skip (default: 0)
+
+  ## Response Data:
+  Array of activity log objects filtered by date range.
+
+  ## Usage:
+  Use this endpoint for historical analysis and reporting.
+}

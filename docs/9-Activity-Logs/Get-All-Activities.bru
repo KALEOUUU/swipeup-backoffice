@@ -1,0 +1,45 @@
+meta {
+  name: Get All Activities
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/api/activity-logs?action=login&limit=20&offset=0
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+
+  test("Response has data array", function() {
+    expect(res.getBody().data).to.be.an('array');
+  });
+}
+
+docs {
+  # Get All Activities
+
+  Retrieves all activity logs with optional filtering.
+
+  ## Query Parameters:
+  - `action` (optional): Filter by specific action (login, add_to_cart, etc.)
+  - `limit` (optional): Maximum number of activities to return (default: 50)
+  - `offset` (optional): Number of activities to skip (default: 0)
+
+  ## Response Data:
+  Array of activity log objects (same structure as user activities).
+
+  ## Usage:
+  Use this endpoint for admin monitoring and system-wide activity analysis.
+}

@@ -1,0 +1,67 @@
+meta {
+  name: Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/api/auth/login
+  body: json
+}
+
+body:json {
+  {
+    "username": "siswa001",
+    "password": "password123"
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+
+  test("Response has user data", function() {
+    expect(res.getBody().data.user).to.exist;
+  });
+
+  test("Response has token", function() {
+    expect(res.getBody().data.token).to.be.a('string');
+  });
+
+  test("Token is not empty", function() {
+    expect(res.getBody().data.token.length).to.be.greaterThan(0);
+  });
+}
+
+docs {
+  # User Login
+
+  Authenticates user credentials and returns JWT token for API access.
+
+  ## Request Body:
+  - `username` (required): User's username
+  - `password` (required): User's password
+
+  ## Response Data:
+  - `user`: User information (without password)
+  - `token`: JWT token for authentication
+
+  ## Token Usage:
+  Include token in Authorization header for protected routes:
+  ```
+  Authorization: Bearer <token>
+  ```
+
+  ## Token Expiry:
+  - Tokens expire after 24 hours
+  - Need to login again after expiry
+
+  ## Error Responses:
+  - Invalid username/password: "invalid username or password"
+  - Account not found: "invalid username or password"
+}

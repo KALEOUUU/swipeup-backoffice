@@ -1,0 +1,48 @@
+meta {
+  name: Get Activity Stats
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8080/api/activity-logs/stats
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+
+  test("Response has stats data", function() {
+    expect(res.getBody().data).to.exist;
+  });
+
+  test("Stats has required fields", function() {
+    expect(res.getBody().data.total_activities).to.be.a('number');
+    expect(res.getBody().data.unique_users).to.be.a('number');
+    expect(res.getBody().data.today_activities).to.be.a('number');
+  });
+}
+
+docs {
+  # Get Activity Stats
+
+  Retrieves activity statistics and metrics.
+
+  ## Response Data:
+  - `total_activities`: Total number of logged activities
+  - `unique_users`: Number of unique users with activities
+  - `today_activities`: Number of activities logged today
+
+  ## Usage:
+  Use this endpoint for dashboard metrics and system monitoring.
+}

@@ -1,0 +1,33 @@
+meta {
+  name: Clear Cart
+  type: http
+  seq: 5
+}
+
+delete {
+  url: http://localhost:8080/api/cart/clear?siswa_id=1
+  body: none
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+}
+
+docs {
+  # Clear Entire Cart
+
+  Removes all items from a siswa's cart.
+
+  ## Query Parameters:
+  - `siswa_id` (required): Siswa ID whose cart to clear
+
+  ## Behavior:
+  - Deletes all cart items for the specified siswa
+  - Useful for canceling entire order
+}

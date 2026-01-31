@@ -1,0 +1,54 @@
+meta {
+  name: Get Cart
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/api/cart?siswa_id=1
+  body: none
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+
+  test("Response has cart data", function() {
+    expect(res.getBody().data).to.exist;
+  });
+
+  test("Data has items array", function() {
+    expect(res.getBody().data.items).to.be.an('array');
+  });
+
+  test("Data has total_items", function() {
+    expect(res.getBody().data.total_items).to.be.a('number');
+  });
+
+  test("Data has total_price", function() {
+    expect(res.getBody().data.total_price).to.be.a('number');
+  });
+}
+
+docs {
+  # Get Cart Items
+
+  Retrieves all cart items for a specific siswa including totals.
+
+  ## Query Parameters:
+  - `siswa_id` (required): Siswa ID to get cart for
+
+  ## Response Data:
+  - `items`: Array of cart items with menu and siswa details
+  - `total_items`: Total quantity of all items
+  - `total_price`: Total price of all items
+
+  ## Preloaded Relations:
+  - Cart items include full Menu details (with Stan info)
+  - Cart items include Siswa details
+}

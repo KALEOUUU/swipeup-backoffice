@@ -1,0 +1,42 @@
+meta {
+  name: Update Cart Item
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:8080/api/cart/1
+  body: json
+}
+
+body:json {
+  {
+    "qty": 3
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+}
+
+docs {
+  # Update Cart Item Quantity
+
+  Updates the quantity of a specific cart item.
+
+  ## URL Parameters:
+  - `id`: Cart item ID to update
+
+  ## Request Body:
+  - `qty` (required): New quantity (must be > 0)
+
+  ## Behavior:
+  - Updates quantity for existing cart item
+  - Validates that cart item exists
+}

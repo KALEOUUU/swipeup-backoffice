@@ -1,0 +1,38 @@
+meta {
+  name: Create Diskon
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/api/diskon
+  body: json
+}
+
+body:json {
+  {
+    "nama_diskon": "Diskon Akhir Bulan",
+    "persentase_diskon": 10,
+    "tanggal_awal": "2025-01-31T00:00:00Z",
+    "tanggal_akhir": "2025-02-28T23:59:59Z",
+    "tipe_diskon": "global"
+  }
+}
+
+tests {
+  test("Status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Response data has ID", function() {
+    expect(res.getBody().data.id).to.exist;
+  });
+  
+  test("Nama Diskon matches request", function() {
+    expect(res.getBody().data.nama_diskon).to.equal("Diskon Akhir Bulan");
+  });
+}

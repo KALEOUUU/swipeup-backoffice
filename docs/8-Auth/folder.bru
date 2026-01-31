@@ -1,0 +1,30 @@
+meta {
+  name: Authentication
+  type: folder
+}
+
+docs {
+  # Authentication System
+
+  This folder contains authentication endpoints for user registration, login, and profile management.
+
+  ## Authentication Flow:
+  1. **Register** - Create new user account
+  2. **Login** - Authenticate and get JWT token
+  3. **Profile** - Get current user profile (requires auth)
+
+  ## JWT Token Usage:
+  Include token in Authorization header:
+  ```
+  Authorization: Bearer <your-jwt-token>
+  ```
+
+  ## User Roles:
+  - `admin_stan`: Can manage stan and menu
+  - `siswa`: Can browse menu, manage cart, place orders
+
+  ## Security Features:
+  - Password hashing with bcrypt
+  - JWT tokens with 24-hour expiry
+  - Token validation on protected routes
+}

@@ -1,0 +1,63 @@
+meta {
+  name: Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/api/auth/register
+  body: json
+}
+
+body:json {
+  {
+    "username": "siswa001",
+    "password": "password123",
+    "role": "siswa"
+  }
+}
+
+tests {
+  test("Status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+
+  test("Response has user data", function() {
+    expect(res.getBody().data).to.exist;
+  });
+
+  test("User has correct username", function() {
+    expect(res.getBody().data.username).to.equal("siswa001");
+  });
+
+  test("User has correct role", function() {
+    expect(res.getBody().data.role).to.equal("siswa");
+  });
+}
+
+docs {
+  # Register New User
+
+  Creates a new user account with username, password, and role.
+
+  ## Request Body:
+  - `username` (required): Unique username
+  - `password` (required): Password (min 6 characters)
+  - `role` (required): Either "admin_stan" or "siswa"
+
+  ## Password Security:
+  - Passwords are hashed using bcrypt
+  - Minimum length: 6 characters
+  - Stored securely (not returned in response)
+
+  ## Role Options:
+  - `admin_stan`: Can manage food stalls and menus
+  - `siswa`: Can browse menu, manage cart, place orders
+
+  ## Response:
+  Returns user data without password field.
+}

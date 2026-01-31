@@ -1,0 +1,23 @@
+meta {
+  name: Get Global Diskon
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:8080/api/diskon/global
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Response data is array", function() {
+    expect(res.getBody().data).to.be.an('array');
+  });
+}

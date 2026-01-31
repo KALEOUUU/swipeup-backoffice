@@ -1,0 +1,44 @@
+meta {
+  name: Clean Old Logs
+  type: http
+  seq: 5
+}
+
+delete {
+  url: http://localhost:8080/api/activity-logs/clean?days=90
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+
+  test("Response has success message", function() {
+    expect(res.getBody().message).to.contain('cleaned successfully');
+  });
+}
+
+docs {
+  # Clean Old Logs
+
+  Removes activity logs older than specified number of days.
+
+  ## Query Parameters:
+  - `days` (optional): Number of days to keep (default: 90)
+
+  ## Usage:
+  Use this endpoint for log maintenance and storage optimization.
+  Typically run as a scheduled task to prevent log table from growing too large.
+
+  ## Warning:
+  This operation permanently deletes old activity logs. Use with caution.
+}
