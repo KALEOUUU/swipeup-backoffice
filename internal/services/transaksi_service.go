@@ -62,3 +62,20 @@ func (s *TransaksiService) GetByDateRange(startDate, endDate time.Time) ([]model
 		Find(&transaksi).Error
 	return transaksi, err
 }
+
+// DeleteTransaksi soft deletes a transaction and its details (admin only)
+func (s *TransaksiService) DeleteTransaksi(id uint) error {
+	return s.GetDB().Transaction(func(tx *gorm.DB) error {
+		// Delete detail transaksi first
+		if err := tx.Where("id_transaksi = ?", id).Delete(&models.DetailTransaksi{}).Error; err != nil {
+			return err
+		}
+		// Delete transaksi
+		return tx.Delete(&models.Transaksi{}, id).Error
+	})
+}
+
+// UpdateTransaksi updates transaction fields (admin only)
+func (s *TransaksiService) UpdateTransaksi(id uint, updates map[string]interface{}) error {
+	return s.GetDB().Model(&models.Transaksi{}).Where("id = ?", id).Updates(updates).Error
+}

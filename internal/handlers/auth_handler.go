@@ -72,3 +72,24 @@ func (h *AuthHandler) GetProfile(c *gin.Context) {
 
 	SuccessResponse(c, "Profile retrieved successfully", user)
 }
+
+// RegisterAdminStan creates admin_stan account with stan (public access)
+func (h *AuthHandler) RegisterAdminStan(c *gin.Context) {
+	var req services.RegisterAdminStanRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequestResponse(c, "Invalid request body", err)
+		return
+	}
+
+	user, err := h.authService.RegisterAdminStan(req)
+	if err != nil {
+		BadRequestResponse(c, "Registration failed", err)
+		return
+	}
+
+	// Log activity (public registration)
+	ip, userAgent := GetClientInfo(c)
+	h.activityLogService.LogActivity(user.ID, "register_admin_stan_public", "New admin_stan registered: "+req.Username, ip, userAgent)
+
+	CreatedResponse(c, "Admin stan registered successfully", user)
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Get Available Menu
+  type: http
+  seq: 11
+}
+
+get {
+  url: http://localhost:8080/api/menu/available?stan_id=1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("All menus are available", function() {
+    const menus = res.getBody().data;
+    menus.forEach(menu => {
+      expect(menu.is_available).to.equal(true);
+      expect(menu.stock).to.be.greaterThan(0);
+    });
+  });
+}

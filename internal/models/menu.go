@@ -20,6 +20,8 @@ type Menu struct {
 	Jenis        JenisMenu `json:"jenis" gorm:"type:varchar(20);not null"`
 	Foto         string    `json:"foto" gorm:"type:varchar(255)"`
 	Deskripsi    string    `json:"deskripsi" gorm:"type:text"`
+	Stock        int       `json:"stock" gorm:"default:0"`
+	IsAvailable  bool      `json:"is_available" gorm:"default:true"`
 	IDStan       uint      `json:"id_stan" gorm:"not null"`
 	CreatedAt    time.Time
 	UpdatedAt    time.Time

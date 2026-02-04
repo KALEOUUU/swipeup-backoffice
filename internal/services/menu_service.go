@@ -51,3 +51,40 @@ func (s *MenuService) SearchByName(name string) ([]models.Menu, error) {
 	err := s.GetDB().Preload("Stan").Where("nama_makanan ILIKE ?", "%"+name+"%").Find(&menus).Error
 	return menus, err
 }
+
+// UpdateStock updates the stock of a menu item
+func (s *MenuService) UpdateStock(id uint, stock int) error {
+	isAvailable := stock > 0
+	return s.GetDB().Model(&models.Menu{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"stock":        stock,
+		"is_available": isAvailable,
+	}).Error
+}
+
+// AdjustStock adjusts stock by delta (positive or negative)
+func (s *MenuService) AdjustStock(id uint, delta int) error {
+	return s.GetDB().Transaction(func(tx *gorm.DB) error {
+		var menu models.Menu
+		if err := tx.First(&menu, id).Error; err != nil {
+			return err
+		}
+		
+		newStock := menu.Stock + delta
+		if newStock < 0 {
+			newStock = 0
+		}
+		
+		isAvailable := newStock > 0
+		return tx.Model(&menu).Updates(map[string]interface{}{
+			"stock":        newStock,
+			"is_available": isAvailable,
+		}).Error
+	})
+}
+
+// GetAvailableMenuByStanID gets only available (in-stock) menu items
+func (s *MenuService) GetAvailableMenuByStanID(stanID uint) ([]models.Menu, error) {
+	var menus []models.Menu
+	err := s.GetDB().Preload("Stan").Where("id_stan = ? AND is_available = ? AND stock > 0", stanID, true).Find(&menus).Error
+	return menus, err
+}

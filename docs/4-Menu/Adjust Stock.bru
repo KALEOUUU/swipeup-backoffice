@@ -1,0 +1,35 @@
+meta {
+  name: Adjust Stock
+  type: http
+  seq: 10
+}
+
+patch {
+  url: http://localhost:8080/api/menu/:id/adjust-stock
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 1
+}
+
+auth:bearer {
+  token: {{admin_stan_token}}
+}
+
+body:json {
+  {
+    "delta": -5
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+}

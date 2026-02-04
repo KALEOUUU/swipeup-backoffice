@@ -159,3 +159,73 @@ func (h *TransaksiHandler) UpdateStatus(c *gin.Context) {
 	transaksi, _ := h.service.GetWithFullDetails(id)
 	SuccessResponse(c, "Transaction status updated successfully", transaksi)
 }
+
+// Delete deletes a transaction (admin/superadmin only)
+func (h *TransaksiHandler) Delete(c *gin.Context) {
+	id, err := GetIDParam(c)
+	if err != nil {
+		BadRequestResponse(c, "Invalid ID", err)
+		return
+	}
+
+	// Check if transaksi exists
+	_, err = h.service.GetWithFullDetails(id)
+	if err != nil {
+		NotFoundResponse(c, "Transaction not found")
+		return
+	}
+
+	if err := h.service.DeleteTransaksi(id); err != nil {
+		InternalErrorResponse(c, "Failed to delete transaction", err)
+		return
+	}
+
+	SuccessResponse(c, "Transaction deleted successfully", nil)
+}
+
+// Update updates a transaction (admin/superadmin only)
+func (h *TransaksiHandler) Update(c *gin.Context) {
+	id, err := GetIDParam(c)
+	if err != nil {
+		BadRequestResponse(c, "Invalid ID", err)
+		return
+	}
+
+	// Check if transaksi exists
+	_, err = h.service.GetWithFullDetails(id)
+	if err != nil {
+		NotFoundResponse(c, "Transaction not found")
+		return
+	}
+
+	var updateData map[string]interface{}
+	if err := c.ShouldBindJSON(&updateData); err != nil {
+		BadRequestResponse(c, "Invalid request body", err)
+		return
+	}
+
+	// Build updates map with only allowed fields
+	updates := make(map[string]interface{})
+	if status, ok := updateData["status"].(string); ok {
+		updates["status"] = status
+	}
+	if idStan, ok := updateData["id_stan"].(float64); ok {
+		updates["id_stan"] = uint(idStan)
+	}
+	if idSiswa, ok := updateData["id_siswa"].(float64); ok {
+		updates["id_siswa"] = uint(idSiswa)
+	}
+
+	if len(updates) == 0 {
+		BadRequestResponse(c, "No valid fields to update", nil)
+		return
+	}
+
+	if err := h.service.UpdateTransaksi(id, updates); err != nil {
+		InternalErrorResponse(c, "Failed to update transaction", err)
+		return
+	}
+
+	transaksi, _ := h.service.GetWithFullDetails(id)
+	SuccessResponse(c, "Transaction updated successfully", transaksi)
+}

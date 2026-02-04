@@ -76,3 +76,60 @@ func OptionalAuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// RoleMiddleware checks if user has required role(s)
+func RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userRole, exists := c.Get("role")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"success": false,
+				"message": "Unauthorized",
+				"error":   "User role not found",
+			})
+			c.Abort()
+			return
+		}
+
+		roleStr, ok := userRole.(string)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"success": false,
+				"message": "Internal server error",
+				"error":   "Invalid role type",
+			})
+			c.Abort()
+			return
+		}
+
+		// Check if user role is in allowed roles
+		for _, allowedRole := range allowedRoles {
+			if roleStr == allowedRole {
+				c.Next()
+				return
+			}
+		}
+
+		c.JSON(http.StatusForbidden, gin.H{
+			"success": false,
+			"message": "Forbidden",
+			"error":   "You don't have permission to access this resource",
+		})
+		c.Abort()
+	}
+}
+
+// SuperAdminOnly middleware - only superadmin can access
+func SuperAdminOnly() gin.HandlerFunc {
+	return RoleMiddleware("superadmin")
+}
+
+// AdminStanOnly middleware - only admin_stan can access
+func AdminStanOnly() gin.HandlerFunc {
+	return RoleMiddleware("admin_stan")
+}
+
+// AdminAccess middleware - superadmin and admin_stan can access
+func AdminAccess() gin.HandlerFunc {
+	return RoleMiddleware("superadmin", "admin_stan")
+}

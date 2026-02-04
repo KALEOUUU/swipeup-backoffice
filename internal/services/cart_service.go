@@ -55,6 +55,16 @@ func (s *CartService) RemoveFromCart(cartID uint) error {
 	return s.db.Delete(&models.Cart{}, cartID).Error
 }
 
+// GetCartByID gets a single cart item by ID
+func (s *CartService) GetCartByID(cartID uint) (*models.Cart, error) {
+	var cart models.Cart
+	err := s.db.Preload("Menu.Stan").Preload("Siswa").First(&cart, cartID).Error
+	if err != nil {
+		return nil, err
+	}
+	return &cart, nil
+}
+
 // ClearCart removes all items from cart for a siswa
 func (s *CartService) ClearCart(siswaID uint) error {
 	return s.db.Where("id_siswa = ?", siswaID).Delete(&models.Cart{}).Error

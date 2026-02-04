@@ -31,7 +31,16 @@ type LoginRequest struct {
 type RegisterRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required,min=6"`
-	Role     string `json:"role" binding:"required,oneof=admin_stan siswa"`
+	Role     string `json:"role" binding:"required,oneof=superadmin admin_stan siswa"`
+}
+
+// RegisterAdminStanRequest is used by superadmin to register admin_stan
+type RegisterAdminStanRequest struct {
+	Username    string `json:"username" binding:"required"`
+	Password    string `json:"password" binding:"required,min=6"`
+	NamaStan    string `json:"nama_stan" binding:"required"`
+	NamaPemilik string `json:"nama_pemilik" binding:"required"`
+	Telp        string `json:"telp"`
 }
 
 type AuthResponse struct {
@@ -151,6 +160,57 @@ func (s *AuthService) Login(req LoginRequest) (*AuthResponse, error) {
 		User:  user,
 		Token: token,
 	}, nil
+}
+
+// RegisterAdminStan creates a new admin_stan account with stan (public access)
+func (s *AuthService) RegisterAdminStan(req RegisterAdminStanRequest) (*models.User, error) {
+	// Check if username already exists
+	var existingUser models.User
+	if err := s.db.Where("username = ?", req.Username).First(&existingUser).Error; err == nil {
+		return nil, errors.New("username already exists")
+	}
+
+	// Hash password
+	hashedPassword, err := s.HashPassword(req.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create user with role admin_stan
+	user := models.User{
+		Username: req.Username,
+		Password: hashedPassword,
+		Role:     models.RoleAdminStan,
+	}
+
+	// Start transaction
+	tx := s.db.Begin()
+
+	if err := tx.Create(&user).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	// Create stan for this admin
+	stan := models.Stan{
+		NamaStan:    req.NamaStan,
+		NamaPemilik: req.NamaPemilik,
+		Telp:        req.Telp,
+		IDUser:      user.ID,
+		AcceptCash:  true,
+		AcceptQris:  false,
+	}
+
+	if err := tx.Create(&stan).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	tx.Commit()
+
+	// Remove password from response
+	user.Password = ""
+	return &user, nil
 }
 
 // GetUserByID gets user by ID (without password)

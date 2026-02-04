@@ -193,3 +193,70 @@ func (h *MenuHandler) SearchByName(c *gin.Context) {
 
 	SuccessResponse(c, "Menus retrieved successfully", menus)
 }
+
+// UpdateStock updates the stock of a menu item (inventory management)
+func (h *MenuHandler) UpdateStock(c *gin.Context) {
+	id, err := GetIDParam(c)
+	if err != nil {
+		BadRequestResponse(c, "Invalid ID", err)
+		return
+	}
+
+	var req struct {
+		Stock int `json:"stock" binding:"required,min=0"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequestResponse(c, "Invalid request body", err)
+		return
+	}
+
+	if err := h.service.UpdateStock(id, req.Stock); err != nil {
+		InternalErrorResponse(c, "Failed to update stock", err)
+		return
+	}
+
+	menu, _ := h.service.FindByID(id, "Stan")
+	SuccessResponse(c, "Stock updated successfully", menu)
+}
+
+// AdjustStock adjusts stock by a delta value (positive to add, negative to reduce)
+func (h *MenuHandler) AdjustStock(c *gin.Context) {
+	id, err := GetIDParam(c)
+	if err != nil {
+		BadRequestResponse(c, "Invalid ID", err)
+		return
+	}
+
+	var req struct {
+		Delta int `json:"delta" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequestResponse(c, "Invalid request body", err)
+		return
+	}
+
+	if err := h.service.AdjustStock(id, req.Delta); err != nil {
+		InternalErrorResponse(c, "Failed to adjust stock", err)
+		return
+	}
+
+	menu, _ := h.service.FindByID(id, "Stan")
+	SuccessResponse(c, "Stock adjusted successfully", menu)
+}
+
+// GetAvailableByStanID gets only available (in-stock) menu items by stan
+func (h *MenuHandler) GetAvailableByStanID(c *gin.Context) {
+	stanID, err := GetQueryParamUint(c, "stan_id")
+	if err != nil || stanID == 0 {
+		BadRequestResponse(c, "Invalid stan_id parameter", err)
+		return
+	}
+
+	menus, err := h.service.GetAvailableMenuByStanID(stanID)
+	if err != nil {
+		InternalErrorResponse(c, "Failed to get available menus", err)
+		return
+	}
+
+	SuccessResponse(c, "Available menus retrieved successfully", menus)
+}

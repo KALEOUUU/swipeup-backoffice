@@ -29,6 +29,16 @@ func (s *ActivityLogService) LogActivity(userID uint, action, description, ipAdd
 	return s.db.Create(activity).Error
 }
 
+// GetActivityByID retrieves a single activity log by ID
+func (s *ActivityLogService) GetActivityByID(id uint) (*models.ActivityLog, error) {
+	var activity models.ActivityLog
+	err := s.db.Preload("User").First(&activity, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &activity, nil
+}
+
 // GetUserActivities retrieves activities for a specific user
 func (s *ActivityLogService) GetUserActivities(userID uint, limit, offset int) ([]models.ActivityLog, error) {
 	var activities []models.ActivityLog

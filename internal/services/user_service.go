@@ -37,3 +37,13 @@ func (s *UserService) GetUserByID(id string) (*models.User, error) {
 	err := s.db.First(&user, id).Error
 	return &user, err
 }
+
+// UpdateUser updates a user's information
+func (s *UserService) UpdateUser(id uint, updates map[string]interface{}) error {
+	return s.db.Model(&models.User{}).Where("id = ?", id).Updates(updates).Error
+}
+
+// DeleteUser soft deletes a user
+func (s *UserService) DeleteUser(id uint) error {
+	return s.db.Delete(&models.User{}, id).Error
+}
