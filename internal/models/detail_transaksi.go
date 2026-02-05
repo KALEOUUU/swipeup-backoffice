@@ -15,6 +15,7 @@ type DetailTransaksi struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	DeletedAt    gorm.DeletedAt `gorm:"index"`
+	NamaDiskon       string     `json:"nama_diskon" gorm:"type:varchar(100);not null"`
 	
 	// Relations
 	Transaksi Transaksi `json:"transaksi" gorm:"foreignKey:IDTransaksi;constraint:OnDelete:CASCADE"`
