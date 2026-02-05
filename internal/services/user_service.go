@@ -32,6 +32,17 @@ func (s *UserService) GetAllUsers() ([]models.User, error) {
 	return users, nil
 }
 
+func (s *UserService) GetAllUsersPaginated(limit, offset int) ([]models.User, int64, error) {
+	var users []models.User
+	var count int64
+	err := s.db.Model(&models.User{}).Count(&count).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	err = s.db.Limit(limit).Offset(offset).Find(&users).Error
+	return users, count, err
+}
+
 func (s *UserService) GetUserByID(id string) (*models.User, error) {
 	var user models.User
 	err := s.db.First(&user, id).Error

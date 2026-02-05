@@ -1,0 +1,61 @@
+meta {
+  name: Update Diskon Menu
+  type: http
+  seq: 6
+}
+
+put {
+  url: http://localhost:8080/api/diskon/3
+  body: json
+}
+
+body:json {
+  {
+    "nama_diskon": "Promo Menu Spesial Updated",
+    "persentase_diskon": 25,
+    "tanggal_awal": "2025-02-01T00:00:00Z",
+    "tanggal_akhir": "2025-02-28T23:59:59Z"
+  }
+}
+
+docs {
+  # Update Diskon Menu
+  
+  Update data diskon yang berlaku untuk menu tertentu.
+  
+  ## Endpoint
+  PUT /api/diskon/:id
+  
+  ## Authentication
+  Required: Bearer Token (Superadmin atau Admin Stan)
+  
+  ## Permission
+  - Superadmin: Dapat update diskon menu manapun
+  - Admin Stan: Hanya dapat update diskon menu untuk stan mereka sendiri
+  
+  ## Request Body (All Optional)
+  - `nama_diskon` (string): Nama diskon baru
+  - `persentase_diskon` (float): Persentase diskon baru (0-100)
+  - `tanggal_awal` (string): Tanggal mulai baru (RFC3339 format)
+  - `tanggal_akhir` (string): Tanggal akhir baru (RFC3339 format)
+  
+  ## Notes
+  - Endpoint ini hanya update data diskon, tidak mengubah menu yang terkait
+  - Untuk menambah/menghapus menu dari diskon, gunakan:
+    - POST /api/diskon/:id/assign (assign menu ke diskon)
+    - DELETE /api/diskon/:id/remove (remove menu dari diskon)
+  
+  ## Error Cases
+  - 403: Admin stan mencoba update diskon menu untuk stan lain
+  - 404: Diskon tidak ditemukan
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+}

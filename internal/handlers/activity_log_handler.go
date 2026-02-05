@@ -25,35 +25,29 @@ func (h *ActivityLogHandler) GetUserActivities(c *gin.Context) {
 		return
 	}
 
-	limit, offset := ParsePaginationParams(c)
+	page, limit, offset := ParsePaginationParams(c)
 
-	activities, err := h.service.GetUserActivities(userID, limit, offset)
+	activities, total, err := h.service.GetUserActivitiesPaginated(userID, limit, offset)
 	if err != nil {
 		InternalErrorResponse(c, "Failed to retrieve activities", err)
 		return
 	}
 
-	SuccessResponse(c, "Activities retrieved successfully", gin.H{
-		"activities": activities,
-		"count":      len(activities),
-	})
+	PaginatedSuccessResponse(c, "Activities retrieved successfully", activities, page, limit, int(total))
 }
 
 // GetAllActivities retrieves all activities with optional filtering
 func (h *ActivityLogHandler) GetAllActivities(c *gin.Context) {
 	actionFilter := c.Query("action")
-	limit, offset := ParsePaginationParams(c)
+	page, limit, offset := ParsePaginationParams(c)
 
-	activities, err := h.service.GetAllActivities(actionFilter, limit, offset)
+	activities, total, err := h.service.GetAllActivitiesPaginated(actionFilter, limit, offset)
 	if err != nil {
 		InternalErrorResponse(c, "Failed to retrieve activities", err)
 		return
 	}
 
-	SuccessResponse(c, "Activities retrieved successfully", gin.H{
-		"activities": activities,
-		"count":      len(activities),
-	})
+	PaginatedSuccessResponse(c, "Activities retrieved successfully", activities, page, limit, int(total))
 }
 
 // GetActivitiesByDateRange retrieves activities within a date range
@@ -81,18 +75,15 @@ func (h *ActivityLogHandler) GetActivitiesByDateRange(c *gin.Context) {
 	// Set end date to end of day
 	endDate = endDate.Add(24*time.Hour - time.Second)
 
-	limit, offset := ParsePaginationParams(c)
+	page, limit, offset := ParsePaginationParams(c)
 
-	activities, err := h.service.GetActivitiesByDateRange(startDate, endDate, limit, offset)
+	activities, total, err := h.service.GetActivitiesByDateRangePaginated(startDate, endDate, limit, offset)
 	if err != nil {
 		InternalErrorResponse(c, "Failed to retrieve activities", err)
 		return
 	}
 
-	SuccessResponse(c, "Activities retrieved successfully", gin.H{
-		"activities": activities,
-		"count":      len(activities),
-	})
+	PaginatedSuccessResponse(c, "Activities retrieved successfully", activities, page, limit, int(total))
 }
 
 // GetActivityStats returns activity statistics

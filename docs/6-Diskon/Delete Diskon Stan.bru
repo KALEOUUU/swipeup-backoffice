@@ -1,0 +1,48 @@
+meta {
+  name: Delete Diskon Stan
+  type: http
+  seq: 7
+}
+
+delete {
+  url: http://localhost:8080/api/diskon/2
+}
+
+docs {
+  # Delete Diskon Stan
+  
+  Menghapus diskon yang berlaku untuk seluruh stan.
+  
+  ## Endpoint
+  DELETE /api/diskon/:id
+  
+  ## Authentication
+  Required: Bearer Token (Superadmin atau Admin Stan)
+  
+  ## Permission
+  - Superadmin: Dapat delete diskon stan manapun
+  - Admin Stan: Hanya dapat delete diskon untuk stan mereka sendiri
+  
+  ## Validation
+  - Diskon harus bertipe "stan"
+  - ID stan dalam diskon harus match dengan stan yang dimiliki admin
+  - Admin stan tidak dapat delete diskon stan milik admin lain
+  
+  ## Error Cases
+  - 403: Admin stan mencoba delete diskon stan lain
+  - 404: Diskon tidak ditemukan
+  
+  ## Notes
+  - Soft delete (deleted_at diisi)
+  - Diskon akan berhenti berlaku setelah dihapus
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+}

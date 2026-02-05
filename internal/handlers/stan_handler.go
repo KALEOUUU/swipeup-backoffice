@@ -42,13 +42,14 @@ func (h *StanHandler) Create(c *gin.Context) {
 }
 
 func (h *StanHandler) GetAll(c *gin.Context) {
-	stan, err := h.service.FindAll("User")
+	page, limit, offset := ParsePaginationParams(c)
+	stan, total, err := h.service.FindAllPaginated(limit, offset, "User")
 	if err != nil {
 		InternalErrorResponse(c, "Failed to get stan", err)
 		return
 	}
 
-	SuccessResponse(c, "Stan retrieved successfully", stan)
+	PaginatedSuccessResponse(c, "Stan retrieved successfully", stan, page, limit, int(total))
 }
 
 func (h *StanHandler) GetByID(c *gin.Context) {

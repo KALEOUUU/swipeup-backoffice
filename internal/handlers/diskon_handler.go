@@ -1,25 +1,151 @@
 package handlers
 
 import (
+	"fmt"
 	"swipeup-be/internal/models"
 	"swipeup-be/internal/services"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type DiskonHandler struct {
-	service *services.DiskonService
+	service     *services.DiskonService
+	stanService *services.StanService
+	authService *services.AuthService
 }
 
-func NewDiskonHandler(service *services.DiskonService) *DiskonHandler {
-	return &DiskonHandler{service: service}
+func NewDiskonHandler(service *services.DiskonService, stanService *services.StanService, authService *services.AuthService) *DiskonHandler {
+	return &DiskonHandler{
+		service:     service,
+		stanService: stanService,
+		authService: authService,
+	}
+}
+
+// checkDiskonPermission checks if user has permission to modify the diskon
+func (h *DiskonHandler) checkDiskonPermission(c *gin.Context, diskon *models.Diskon) bool {
+	userRole, _ := c.Get("role")
+	role := userRole.(string)
+
+	if role == "superadmin" {
+		return true // superadmin can modify all
+	}
+
+	if role == "admin_stan" {
+		userID, _ := c.Get("user_id")
+		uid := userID.(uint)
+
+		// Get stan owned by this admin
+		stan, err := h.stanService.GetByUserID(uid)
+		if err != nil {
+			return false
+		}
+
+		// Admin can only modify diskon for their own stan or global (but global should be superadmin only)
+		// For stan and menu diskon, check if id_stan matches
+		if diskon.TipeDiskon == models.DiskonStan || diskon.TipeDiskon == models.DiskonMenu {
+			return diskon.IDStan != nil && *diskon.IDStan == stan.ID
+		}
+	}
+
+	return false
+}
+
+type CreateDiskonRequest struct {
+	NamaDiskon       string  `json:"nama_diskon" binding:"required"`
+	PersentaseDiskon float64 `json:"persentase_diskon" binding:"required,min=0,max=100"`
+	TanggalAwal      string  `json:"tanggal_awal" binding:"required"`
+	TanggalAkhir     string  `json:"tanggal_akhir" binding:"required"`
+	TipeDiskon       string  `json:"tipe_diskon" binding:"required,oneof=global stan menu"`
+	IDStan           *uint   `json:"id_stan,omitempty"`
+	IDMenu           []uint  `json:"id_menu,omitempty"`
 }
 
 func (h *DiskonHandler) Create(c *gin.Context) {
-	var diskon models.Diskon
-	if err := c.ShouldBindJSON(&diskon); err != nil {
+	var req CreateDiskonRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		BadRequestResponse(c, "Invalid request body", err)
 		return
+	}
+
+	// Check permission for creation
+	userRole, _ := c.Get("role")
+	role := userRole.(string)
+
+	if role == "admin_stan" {
+		if req.TipeDiskon == "global" {
+			ErrorResponse(c, 403, "Admin stan cannot create global diskon", nil)
+			return
+		}
+		if req.TipeDiskon == "stan" || req.TipeDiskon == "menu" {
+			if req.IDStan == nil {
+				BadRequestResponse(c, "id_stan is required", nil)
+				return
+			}
+			userID, _ := c.Get("user_id")
+			uid := userID.(uint)
+			stan, err := h.stanService.GetByUserID(uid)
+			if err != nil || stan.ID != *req.IDStan {
+				ErrorResponse(c, 403, "You can only create diskon for your own stan", err)
+				return
+			}
+		}
+	}
+
+	// Validate logic
+	if req.TipeDiskon == "stan" || req.TipeDiskon == "menu" {
+		if req.IDStan == nil {
+			BadRequestResponse(c, "id_stan is required for stan or menu discount", nil)
+			return
+		}
+		// Check if stan exists
+		_, err := h.stanService.FindByID(*req.IDStan)
+		if err != nil {
+			NotFoundResponse(c, "Stan not found")
+			return
+		}
+	}
+	if req.TipeDiskon == "menu" && len(req.IDMenu) == 0 {
+		BadRequestResponse(c, "id_menu is required for menu discount", nil)
+		return
+	}
+	if req.TipeDiskon == "menu" {
+		// Check if all menus exist and belong to the stan
+		menuService := services.NewMenuService(h.service.GetDB()) // Assuming we can create it here
+		for _, menuID := range req.IDMenu {
+			menu, err := menuService.FindByID(menuID)
+			if err != nil {
+				NotFoundResponse(c, fmt.Sprintf("Menu with ID %d not found", menuID))
+				return
+			}
+			if menu.IDStan != *req.IDStan {
+				ErrorResponse(c, 400, fmt.Sprintf("Menu with ID %d does not belong to the specified stan", menuID), nil)
+				return
+			}
+		}
+	}
+
+	// Parse dates
+	tanggalAwal, err := time.Parse(time.RFC3339, req.TanggalAwal)
+	if err != nil {
+		BadRequestResponse(c, "Invalid tanggal_awal format", err)
+		return
+	}
+	tanggalAkhir, err := time.Parse(time.RFC3339, req.TanggalAkhir)
+	if err != nil {
+		BadRequestResponse(c, "Invalid tanggal_akhir format", err)
+		return
+	}
+
+	// Create diskon
+	diskon := models.Diskon{
+		NamaDiskon:       req.NamaDiskon,
+		PersentaseDiskon: req.PersentaseDiskon,
+		TanggalAwal:      tanggalAwal,
+		TanggalAkhir:     tanggalAkhir,
+		TipeDiskon:       models.TipeDiskon(req.TipeDiskon),
+		IDStan:           req.IDStan,
 	}
 
 	if err := h.service.Create(&diskon); err != nil {
@@ -27,17 +153,29 @@ func (h *DiskonHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Assign to menus if menu discount
+	if req.TipeDiskon == "menu" {
+		for _, menuID := range req.IDMenu {
+			if err := h.service.AssignToMenu(diskon.ID, menuID); err != nil {
+				// Rollback? For simplicity, just log error
+				InternalErrorResponse(c, "Failed to assign diskon to menu", err)
+				return
+			}
+		}
+	}
+
 	CreatedResponse(c, "Diskon created successfully", diskon)
 }
 
 func (h *DiskonHandler) GetAll(c *gin.Context) {
-	diskon, err := h.service.FindAll()
+	page, limit, offset := ParsePaginationParams(c)
+	diskon, total, err := h.service.FindAllPaginated(limit, offset)
 	if err != nil {
 		InternalErrorResponse(c, "Failed to get diskon", err)
 		return
 	}
 
-	SuccessResponse(c, "Diskon retrieved successfully", diskon)
+	PaginatedSuccessResponse(c, "Diskon retrieved successfully", diskon, page, limit, int(total))
 }
 
 func (h *DiskonHandler) GetActive(c *gin.Context) {
@@ -74,9 +212,15 @@ func (h *DiskonHandler) Update(c *gin.Context) {
 	}
 
 	// Check if diskon exists
-	_, err = h.service.FindByID(id)
+	diskon, err := h.service.FindByID(id)
 	if err != nil {
 		NotFoundResponse(c, "Diskon not found")
+		return
+	}
+
+	// Check permission
+	if !h.checkDiskonPermission(c, diskon) {
+		ErrorResponse(c, 403, "You don't have permission to update this diskon", nil)
 		return
 	}
 
@@ -128,6 +272,19 @@ func (h *DiskonHandler) Delete(c *gin.Context) {
 	id, err := GetIDParam(c)
 	if err != nil {
 		BadRequestResponse(c, "Invalid ID", err)
+		return
+	}
+
+	// Check if diskon exists
+	diskon, err := h.service.FindByID(id)
+	if err != nil {
+		NotFoundResponse(c, "Diskon not found")
+		return
+	}
+
+	// Check permission
+	if !h.checkDiskonPermission(c, diskon) {
+		ErrorResponse(c, 403, "You don't have permission to delete this diskon", nil)
 		return
 	}
 

@@ -20,6 +20,44 @@ body:json {
   }
 }
 
+docs {
+  # Create Diskon Stan
+  
+  Membuat diskon yang berlaku untuk semua menu dalam satu stan tertentu.
+  
+  ## Endpoint
+  POST /api/diskon
+  
+  ## Authentication
+  Required: Bearer Token (Superadmin atau Admin Stan)
+  
+  ## Request Body
+  - `nama_diskon` (string, required): Nama diskon
+  - `persentase_diskon` (float, required): Persentase diskon (0-100)
+  - `tanggal_awal` (string, required): Tanggal mulai diskon (RFC3339 format)
+  - `tanggal_akhir` (string, required): Tanggal akhir diskon (RFC3339 format)
+  - `tipe_diskon` (string, required): Harus "stan"
+  - `id_stan` (uint, required): ID stan yang akan diberi diskon
+  
+  ## Permission
+  - Superadmin: Dapat membuat diskon untuk stan manapun
+  - Admin Stan: Hanya dapat membuat diskon untuk stan mereka sendiri
+  
+  ## Validasi
+  - id_stan wajib diisi
+  - Stan dengan id_stan harus ada di database
+  - Admin stan hanya bisa membuat diskon untuk stan mereka sendiri (berdasarkan user_id)
+  
+  ## Error Cases
+  - 400: id_stan tidak diisi atau stan tidak ditemukan
+  - 403: Admin stan mencoba membuat diskon untuk stan lain
+  - 500: Foreign key constraint error (stan tidak ada di database)
+  
+  ## Notes
+  - Diskon akan otomatis berlaku untuk semua menu dalam stan tersebut
+  - Pastikan stan sudah dibuat sebelum membuat diskon untuk stan tersebut
+}
+
 tests {
   test("Status is 201", function() {
     expect(res.getStatus()).to.equal(201);
@@ -35,5 +73,9 @@ tests {
   
   test("Tipe Diskon is stan", function() {
     expect(res.getBody().data.tipe_diskon).to.equal("stan");
+  });
+  
+  test("ID Stan matches request", function() {
+    expect(res.getBody().data.id_stan).to.equal(1);
   });
 }

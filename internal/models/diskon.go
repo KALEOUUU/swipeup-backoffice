@@ -11,6 +11,7 @@ type TipeDiskon string
 const (
 	DiskonGlobal TipeDiskon = "global" // Diatur oleh superadmin, berlaku semua stan
 	DiskonStan   TipeDiskon = "stan"   // Diatur oleh admin stan, berlaku untuk stannya saja
+	DiskonMenu   TipeDiskon = "menu"   // Diatur oleh admin stan, berlaku untuk menu tertentu
 )
 
 type Diskon struct {

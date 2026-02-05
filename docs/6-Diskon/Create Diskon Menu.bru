@@ -1,0 +1,92 @@
+meta {
+  name: Create Diskon Menu
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8080/api/diskon
+  body: json
+}
+
+body:json {
+  {
+    "nama_diskon": "Promo Menu Spesial",
+    "persentase_diskon": 20,
+    "tanggal_awal": "2025-02-01T00:00:00Z",
+    "tanggal_akhir": "2025-02-28T23:59:59Z",
+    "tipe_diskon": "menu",
+    "id_stan": 1,
+    "id_menu": [1, 2]
+  }
+}
+
+docs {
+  # Create Diskon Menu
+  
+  Membuat diskon yang berlaku hanya untuk menu-menu tertentu dalam satu stan.
+  
+  ## Endpoint
+  POST /api/diskon
+  
+  ## Authentication
+  Required: Bearer Token (Superadmin atau Admin Stan)
+  
+  ## Request Body
+  - `nama_diskon` (string, required): Nama diskon
+  - `persentase_diskon` (float, required): Persentase diskon (0-100)
+  - `tanggal_awal` (string, required): Tanggal mulai diskon (RFC3339 format)
+  - `tanggal_akhir` (string, required): Tanggal akhir diskon (RFC3339 format)
+  - `tipe_diskon` (string, required): Harus "menu"
+  - `id_stan` (uint, required): ID stan dari menu-menu tersebut
+  - `id_menu` (array of uint, required): Array ID menu yang akan diberi diskon
+  
+  ## Permission
+  - Superadmin: Dapat membuat diskon untuk menu di stan manapun
+  - Admin Stan: Hanya dapat membuat diskon untuk menu di stan mereka sendiri
+  
+  ## Validasi
+  - id_stan wajib diisi
+  - id_menu wajib diisi (minimal 1 menu)
+  - Stan dengan id_stan harus ada di database
+  - Semua menu dalam id_menu harus ada di database
+  - Semua menu harus milik stan yang sama dengan id_stan
+  - Admin stan hanya bisa membuat diskon untuk menu di stan mereka sendiri
+  
+  ## Backend Logic
+  - Setelah diskon dibuat, sistem akan membuat entry di tabel menu_diskon untuk setiap menu
+  - Relasi many-to-many antara diskon dan menu melalui tabel menu_diskon
+  
+  ## Error Cases
+  - 400: id_stan atau id_menu tidak diisi
+  - 400: Menu tidak ditemukan atau tidak milik stan yang sama
+  - 403: Admin stan mencoba membuat diskon untuk stan lain
+  - 404: Stan atau menu tidak ditemukan
+  - 500: Foreign key constraint error atau gagal assign ke menu
+  
+  ## Notes
+  - Semua menu dalam array id_menu harus milik stan yang sama
+  - Diskon hanya berlaku untuk menu yang ditentukan, bukan seluruh stan
+}
+
+tests {
+  test("Status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Response data has ID", function() {
+    expect(res.getBody().data.id).to.exist;
+  });
+  
+  test("Tipe Diskon is menu", function() {
+    expect(res.getBody().data.tipe_diskon).to.equal("menu");
+  });
+  
+  test("ID Stan matches request", function() {
+    expect(res.getBody().data.id_stan).to.equal(1);
+  });
+}

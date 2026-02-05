@@ -1,0 +1,60 @@
+meta {
+  name: Update Diskon Stan
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://localhost:8080/api/diskon/2
+  body: json
+}
+
+body:json {
+  {
+    "nama_diskon": "Promo Spesial Stan A Updated",
+    "persentase_diskon": 20,
+    "tanggal_awal": "2025-02-01T00:00:00Z",
+    "tanggal_akhir": "2025-02-28T23:59:59Z"
+  }
+}
+
+docs {
+  # Update Diskon Stan
+  
+  Update diskon yang berlaku untuk seluruh stan.
+  
+  ## Endpoint
+  PUT /api/diskon/:id
+  
+  ## Authentication
+  Required: Bearer Token (Superadmin atau Admin Stan)
+  
+  ## Permission
+  - Superadmin: Dapat update diskon stan manapun
+  - Admin Stan: Hanya dapat update diskon untuk stan mereka sendiri
+  
+  ## Validation
+  - Diskon harus bertipe "stan"
+  - ID stan dalam diskon harus match dengan stan yang dimiliki admin
+  - Admin stan tidak dapat update diskon stan milik admin lain
+  
+  ## Request Body (All Optional)
+  - `nama_diskon` (string): Nama diskon baru
+  - `persentase_diskon` (float): Persentase diskon baru (0-100)
+  - `tanggal_awal` (string): Tanggal mulai baru (RFC3339 format)
+  - `tanggal_akhir` (string): Tanggal akhir baru (RFC3339 format)
+  
+  ## Error Cases
+  - 403: Admin stan mencoba update diskon stan lain
+  - 404: Diskon tidak ditemukan
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+}

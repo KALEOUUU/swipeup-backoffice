@@ -18,6 +18,45 @@ body:json {
   }
 }
 
+docs {
+  # Update Diskon
+  
+  Update data diskon yang sudah ada.
+  
+  ## Endpoint
+  PUT /api/diskon/:id
+  
+  ## Authentication
+  Required: Bearer Token (Superadmin atau Admin Stan)
+  
+  ## Permission Logic
+  - **Superadmin**: Dapat update semua diskon (global, stan, menu)
+  - **Admin Stan**: Hanya dapat update diskon dengan tipe "stan" atau "menu" untuk stan mereka sendiri
+  
+  ## Request Body (All Optional)
+  - `nama_diskon` (string): Nama diskon baru
+  - `persentase_diskon` (float): Persentase diskon baru (0-100)
+  - `tanggal_awal` (string): Tanggal mulai baru (RFC3339 format)
+  - `tanggal_akhir` (string): Tanggal akhir baru (RFC3339 format)
+  - `tipe_diskon` (string): Tipe diskon ("global", "stan", "menu")
+  - `id_stan` (uint): ID stan (untuk tipe "stan" atau "menu")
+  
+  ## Validasi
+  - Diskon dengan ID harus ada
+  - Admin stan hanya bisa update diskon untuk stan mereka sendiri
+  - Minimal 1 field harus diisi untuk update
+  
+  ## Error Cases
+  - 400: Invalid ID atau tidak ada field yang diupdate
+  - 403: Admin stan mencoba update diskon untuk stan lain atau global diskon
+  - 404: Diskon tidak ditemukan
+  - 500: Gagal melakukan update
+  
+  ## Notes
+  - Hanya field yang dikirim yang akan diupdate
+  - Untuk update menu yang terkait dengan diskon menu, gunakan endpoint assign/remove
+}
+
 tests {
   test("Status is 200", function() {
     expect(res.getStatus()).to.equal(200);
@@ -25,5 +64,9 @@ tests {
   
   test("Response success is true", function() {
     expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Updated data returned", function() {
+    expect(res.getBody().data).to.exist;
   });
 }

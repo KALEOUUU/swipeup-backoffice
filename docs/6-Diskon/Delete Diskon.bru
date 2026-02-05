@@ -7,7 +7,36 @@ meta {
 delete {
   url: http://localhost:8080/api/diskon/1
 }
-
+docs {
+  # Delete Diskon
+  
+  Menghapus diskon dari database (soft delete).
+  
+  ## Endpoint
+  DELETE /api/diskon/:id
+  
+  ## Authentication
+  Required: Bearer Token (Superadmin atau Admin Stan)
+  
+  ## Permission Logic
+  - **Superadmin**: Dapat delete semua diskon (global, stan, menu)
+  - **Admin Stan**: Hanya dapat delete diskon dengan tipe "stan" atau "menu" untuk stan mereka sendiri
+  
+  ## Validation
+  - Diskon dengan ID harus ada
+  - Admin stan hanya bisa delete diskon untuk stan mereka sendiri
+  - Admin stan tidak bisa delete diskon global
+  
+  ## Error Cases
+  - 400: Invalid ID
+  - 403: Admin stan mencoba delete diskon untuk stan lain atau diskon global
+  - 404: Diskon tidak ditemukan
+  - 500: Gagal menghapus diskon
+  
+  ## Notes
+  - Menggunakan soft delete (deleted_at diisi, data tidak benar-benar dihapus)
+  - Untuk diskon menu, relasi di tabel menu_diskon juga akan dihapus (CASCADE)
+}
 tests {
   test("Status is 200", function() {
     expect(res.getStatus()).to.equal(200);

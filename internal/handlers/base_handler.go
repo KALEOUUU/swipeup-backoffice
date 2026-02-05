@@ -14,11 +14,41 @@ type Response struct {
 	Error   string      `json:"error,omitempty"`
 }
 
+type PaginatedResponse struct {
+	Success    bool        `json:"success"`
+	Message    string      `json:"message"`
+	Data       interface{} `json:"data,omitempty"`
+	Error      string      `json:"error,omitempty"`
+	Pagination Pagination  `json:"pagination,omitempty"`
+}
+
+type Pagination struct {
+	Page       int `json:"page"`
+	Limit      int `json:"limit"`
+	Total      int `json:"total"`
+	TotalPages int `json:"total_pages"`
+}
+
 func SuccessResponse(c *gin.Context, message string, data interface{}) {
 	c.JSON(http.StatusOK, Response{
 		Success: true,
 		Message: message,
 		Data:    data,
+	})
+}
+
+func PaginatedSuccessResponse(c *gin.Context, message string, data interface{}, page, limit, total int) {
+	totalPages := (total + limit - 1) / limit // Ceiling division
+	c.JSON(http.StatusOK, PaginatedResponse{
+		Success: true,
+		Message: message,
+		Data:    data,
+		Pagination: Pagination{
+			Page:       page,
+			Limit:      limit,
+			Total:      total,
+			TotalPages: totalPages,
+		},
 	})
 }
 
@@ -88,12 +118,19 @@ func GetClientInfo(c *gin.Context) (ip string, userAgent string) {
 	return
 }
 
-// ParsePaginationParams parses limit and offset from query params with defaults
-func ParsePaginationParams(c *gin.Context) (limit int, offset int) {
-	limitStr := c.DefaultQuery("limit", "50")
-	offsetStr := c.DefaultQuery("offset", "0")
+// ParsePaginationParams parses page and limit from query params with defaults
+func ParsePaginationParams(c *gin.Context) (page int, limit int, offset int) {
+	pageStr := c.DefaultQuery("page", "1")
+	limitStr := c.DefaultQuery("limit", "10")
 	
+	page, _ = strconv.Atoi(pageStr)
+	if page < 1 {
+		page = 1
+	}
 	limit, _ = strconv.Atoi(limitStr)
-	offset, _ = strconv.Atoi(offsetStr)
+	if limit < 1 {
+		limit = 10
+	}
+	offset = (page - 1) * limit
 	return
 }

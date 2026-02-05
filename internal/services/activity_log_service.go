@@ -55,6 +55,29 @@ func (s *ActivityLogService) GetUserActivities(userID uint, limit, offset int) (
 	return activities, err
 }
 
+// GetUserActivitiesPaginated retrieves activities for a specific user with pagination
+func (s *ActivityLogService) GetUserActivitiesPaginated(userID uint, limit, offset int) ([]models.ActivityLog, int64, error) {
+	var activities []models.ActivityLog
+	var count int64
+	query := s.db.Model(&models.ActivityLog{}).Where("id_user = ?", userID)
+
+	err := query.Count(&count).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	query = s.db.Preload("User").Where("id_user = ?", userID).Order("created_at DESC")
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+	if offset > 0 {
+		query = query.Offset(offset)
+	}
+
+	err = query.Find(&activities).Error
+	return activities, count, err
+}
+
 // GetAllActivities retrieves all activities with optional filtering
 func (s *ActivityLogService) GetAllActivities(actionFilter string, limit, offset int) ([]models.ActivityLog, error) {
 	var activities []models.ActivityLog
@@ -75,6 +98,37 @@ func (s *ActivityLogService) GetAllActivities(actionFilter string, limit, offset
 	return activities, err
 }
 
+// GetAllActivitiesPaginated retrieves all activities with pagination and total count
+func (s *ActivityLogService) GetAllActivitiesPaginated(actionFilter string, limit, offset int) ([]models.ActivityLog, int64, error) {
+	var activities []models.ActivityLog
+	var count int64
+	query := s.db.Model(&models.ActivityLog{}).Order("created_at DESC")
+
+	if actionFilter != "" {
+		query = query.Where("action = ?", actionFilter)
+	}
+
+	err := query.Count(&count).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	query = s.db.Preload("User").Order("created_at DESC")
+	if actionFilter != "" {
+		query = query.Where("action = ?", actionFilter)
+	}
+
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+	if offset > 0 {
+		query = query.Offset(offset)
+	}
+
+	err = query.Find(&activities).Error
+	return activities, count, err
+}
+
 // GetActivitiesByDateRange retrieves activities within a date range
 func (s *ActivityLogService) GetActivitiesByDateRange(startDate, endDate time.Time, limit, offset int) ([]models.ActivityLog, error) {
 	var activities []models.ActivityLog
@@ -91,6 +145,33 @@ func (s *ActivityLogService) GetActivitiesByDateRange(startDate, endDate time.Ti
 
 	err := query.Find(&activities).Error
 	return activities, err
+}
+
+// GetActivitiesByDateRangePaginated retrieves activities within a date range with pagination
+func (s *ActivityLogService) GetActivitiesByDateRangePaginated(startDate, endDate time.Time, limit, offset int) ([]models.ActivityLog, int64, error) {
+	var activities []models.ActivityLog
+	var count int64
+	query := s.db.Model(&models.ActivityLog{}).
+		Where("created_at >= ? AND created_at <= ?", startDate, endDate)
+
+	err := query.Count(&count).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	query = s.db.Preload("User").
+		Where("created_at >= ? AND created_at <= ?", startDate, endDate).
+		Order("created_at DESC")
+
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+	if offset > 0 {
+		query = query.Offset(offset)
+	}
+
+	err = query.Find(&activities).Error
+	return activities, count, err
 }
 
 // GetActivityStats returns activity statistics

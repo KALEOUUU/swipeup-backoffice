@@ -49,6 +49,25 @@ func (s *BaseService[T]) FindAll(preloads ...string) ([]T, error) {
 	return entities, err
 }
 
+func (s *BaseService[T]) FindAllPaginated(limit, offset int, preloads ...string) ([]T, int64, error) {
+	var entities []T
+	var count int64
+	query := s.db.Model(new(T))
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+	err := query.Count(&count).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	query = s.db
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+	err = query.Limit(limit).Offset(offset).Find(&entities).Error
+	return entities, count, err
+}
+
 func (s *BaseService[T]) FindWithCondition(condition interface{}, preloads ...string) ([]T, error) {
 	var entities []T
 	query := s.db

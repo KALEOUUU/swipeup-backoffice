@@ -29,12 +29,13 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 }
 
 func (h *UserHandler) GetUsers(c *gin.Context) {
-	users, err := h.userService.GetAllUsers()
+	page, limit, offset := ParsePaginationParams(c)
+	users, total, err := h.userService.GetAllUsersPaginated(limit, offset)
 	if err != nil {
 		InternalErrorResponse(c, "Failed to get users", err)
 		return
 	}
-	SuccessResponse(c, "Users retrieved successfully", users)
+	PaginatedSuccessResponse(c, "Users retrieved successfully", users, page, limit, int(total))
 }
 
 func (h *UserHandler) GetUser(c *gin.Context) {

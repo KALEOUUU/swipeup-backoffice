@@ -42,13 +42,14 @@ func (h *SiswaHandler) Create(c *gin.Context) {
 }
 
 func (h *SiswaHandler) GetAll(c *gin.Context) {
-	siswa, err := h.service.FindAll("User")
+	page, limit, offset := ParsePaginationParams(c)
+	siswa, total, err := h.service.FindAllPaginated(limit, offset, "User")
 	if err != nil {
 		InternalErrorResponse(c, "Failed to get siswa", err)
 		return
 	}
 
-	SuccessResponse(c, "Siswa retrieved successfully", siswa)
+	PaginatedSuccessResponse(c, "Siswa retrieved successfully", siswa, page, limit, int(total))
 }
 
 func (h *SiswaHandler) GetByID(c *gin.Context) {

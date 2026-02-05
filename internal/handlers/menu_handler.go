@@ -9,19 +9,58 @@ import (
 )
 
 type MenuHandler struct {
-	service *services.MenuService
+	service     *services.MenuService
+	authService *services.AuthService
+	stanService *services.StanService
 }
 
 func NewMenuHandler(service *services.MenuService) *MenuHandler {
 	return &MenuHandler{service: service}
 }
 
+func NewMenuHandlerWithDeps(service *services.MenuService, authService *services.AuthService, stanService *services.StanService) *MenuHandler {
+	return &MenuHandler{
+		service:     service,
+		authService: authService,
+		stanService: stanService,
+	}
+}
+
 func (h *MenuHandler) Create(c *gin.Context) {
+	// Get user ID from context (authenticated user)
+	userID, exists := GetUserIDFromContext(c)
+	if !exists {
+		BadRequestResponse(c, "User not authenticated", nil)
+		return
+	}
+
 	var menu models.Menu
 	if err := c.ShouldBindJSON(&menu); err != nil {
 		BadRequestResponse(c, "Invalid request body", err)
 		return
 	}
+
+	// Get user information
+	user, err := h.authService.GetUserByID(userID)
+	if err != nil {
+		InternalErrorResponse(c, "Failed to get user information", err)
+		return
+	}
+
+	// Check if user is admin_stan
+	if user.Role != "admin_stan" {
+		BadRequestResponse(c, "Only stan admins can create menu items", nil)
+		return
+	}
+
+	// Get stan for this user
+	stan, err := h.stanService.GetByUserID(userID)
+	if err != nil {
+		InternalErrorResponse(c, "Failed to get stan information", err)
+		return
+	}
+
+	menu.IDStan = stan.ID
 
 	// Handle base64 image if provided
 	if menu.Foto != "" && utils.IsBase64Image(menu.Foto) {
@@ -42,13 +81,14 @@ func (h *MenuHandler) Create(c *gin.Context) {
 }
 
 func (h *MenuHandler) GetAll(c *gin.Context) {
-	menus, err := h.service.FindAll("Stan")
+	page, limit, offset := ParsePaginationParams(c)
+	menus, total, err := h.service.FindAllPaginated(limit, offset, "Stan")
 	if err != nil {
 		InternalErrorResponse(c, "Failed to get menus", err)
 		return
 	}
 
-	SuccessResponse(c, "Menus retrieved successfully", menus)
+	PaginatedSuccessResponse(c, "Menus retrieved successfully", menus, page, limit, int(total))
 }
 
 func (h *MenuHandler) GetByID(c *gin.Context) {
@@ -118,6 +158,9 @@ func (h *MenuHandler) Update(c *gin.Context) {
 	}
 	if deskripsi, ok := updateData["deskripsi"].(string); ok {
 		updates["deskripsi"] = deskripsi
+	}
+	if stock, ok := updateData["stock"].(float64); ok {
+		updates["stock"] = int(stock)
 	}
 
 	if len(updates) == 0 {

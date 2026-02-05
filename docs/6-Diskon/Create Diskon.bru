@@ -19,6 +19,39 @@ body:json {
   }
 }
 
+docs {
+  # Create Diskon Global
+  
+  ## Endpoint
+  POST /api/diskon
+  
+  ## Authentication
+  Required: Bearer Token (Superadmin only for global discount)
+  
+  ## Request Body
+  - `nama_diskon` (string, required): Nama diskon
+  - `persentase_diskon` (float, required): Persentase diskon (0-100)
+  - `tanggal_awal` (string, required): Tanggal mulai diskon (RFC3339 format)
+  - `tanggal_akhir` (string, required): Tanggal akhir diskon (RFC3339 format)
+  - `tipe_diskon` (string, required): Tipe diskon - "global", "stan", atau "menu"
+  - `id_stan` (uint, optional): Required untuk tipe "stan" atau "menu"
+  - `id_menu` (array of uint, optional): Required untuk tipe "menu"
+  
+  ## Tipe Diskon
+  1. **global**: Diskon berlaku untuk semua stan (only superadmin)
+  2. **stan**: Diskon berlaku untuk satu stan tertentu (admin_stan for own stan)
+  3. **menu**: Diskon berlaku untuk menu-menu tertentu dalam satu stan (admin_stan for own stan)
+  
+  ## Permission
+  - Superadmin: Dapat membuat semua tipe diskon
+  - Admin Stan: Hanya dapat membuat diskon "stan" atau "menu" untuk stan mereka sendiri
+  
+  ## Validasi
+  - Untuk tipe "stan" atau "menu": id_stan harus ada dan valid
+  - Untuk tipe "menu": id_menu wajib diisi dan menu harus milik stan yang sama
+  - Admin stan hanya bisa membuat diskon untuk stan mereka sendiri
+}
+
 tests {
   test("Status is 201", function() {
     expect(res.getStatus()).to.equal(201);
@@ -34,5 +67,9 @@ tests {
   
   test("Nama Diskon matches request", function() {
     expect(res.getBody().data.nama_diskon).to.equal("Diskon Akhir Bulan");
+  });
+  
+  test("Tipe Diskon is global", function() {
+    expect(res.getBody().data.tipe_diskon).to.equal("global");
   });
 }

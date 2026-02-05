@@ -77,13 +77,14 @@ func (h *TransaksiHandler) Create(c *gin.Context) {
 }
 
 func (h *TransaksiHandler) GetAll(c *gin.Context) {
-	transaksi, err := h.service.FindAll("Stan", "Siswa", "DetailTransaksi")
+	page, limit, offset := ParsePaginationParams(c)
+	transaksi, total, err := h.service.FindAllPaginated(limit, offset, "Stan", "Siswa", "DetailTransaksi")
 	if err != nil {
 		InternalErrorResponse(c, "Failed to get transactions", err)
 		return
 	}
 
-	SuccessResponse(c, "Transactions retrieved successfully", transaksi)
+	PaginatedSuccessResponse(c, "Transactions retrieved successfully", transaksi, page, limit, int(total))
 }
 
 func (h *TransaksiHandler) GetByID(c *gin.Context) {
