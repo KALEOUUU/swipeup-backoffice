@@ -5,8 +5,12 @@ meta {
 }
 
 delete {
-  url: http://localhost:8080/api/cart/1
-  body: none
+  url: http://localhost:8080/api/student/cart/1
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 tests {

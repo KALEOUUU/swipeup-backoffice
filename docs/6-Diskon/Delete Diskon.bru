@@ -5,7 +5,12 @@ meta {
 }
 
 delete {
-  url: http://localhost:8080/api/diskon/1
+  url: http://localhost:8080/api/admin-stan/discounts/1
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 docs {
   # Delete Diskon

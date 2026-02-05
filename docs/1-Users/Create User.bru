@@ -5,8 +5,13 @@ meta {
 }
 
 post {
-  url: http://localhost:8080/api/users
+  url: http://localhost:8080/api/superadmin/users
   body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 body:json {

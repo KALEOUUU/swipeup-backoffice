@@ -47,12 +47,45 @@ Mengelola transaksi pembelian siswa.
 - ✅ [Update Transaksi Status](5-Transaksi/Update%20Transaksi%20Status.bru) - Mengupdate status transaksi
 
 ### 6. Diskon (Potongan Harga)
-Mengelola diskon yang berlaku untuk menu tertentu.
+Mengelola diskon dengan dukungan 2 level (Global & Per Stan).
 - ✅ [Create Diskon](6-Diskon/Create%20Diskon.bru) - Membuat diskon baru
+- ✅ [Create Diskon Stan](6-Diskon/Create%20Diskon%20Stan.bru) - Membuat diskon per stan
+- ✅ [Create Diskon Menu](6-Diskon/Create%20Diskon%20Menu.bru) - Membuat diskon per menu
 - ✅ [Get All Diskon](6-Diskon/Get%20All%20Diskon.bru) - Mendapatkan semua diskon
 - ✅ [Get Diskon by ID](6-Diskon/Get%20Diskon%20by%20ID.bru) - Mendapatkan diskon berdasarkan ID
+- ✅ [Get Global Diskon](6-Diskon/Get%20Global%20Diskon.bru) - Mendapatkan diskon global
+- ✅ [Get Diskon by Stan](6-Diskon/Get%20Diskon%20by%20Stan.bru) - Mendapatkan diskon berdasarkan stan
+- ✅ [Get Active Diskon by Stan](6-Diskon/Get%20Active%20Diskon%20by%20Stan.bru) - Mendapatkan diskon aktif untuk stan
 - ✅ [Update Diskon](6-Diskon/Update%20Diskon.bru) - Mengupdate data diskon
+- ✅ [Update Diskon Stan](6-Diskon/Update%20Diskon%20Stan.bru) - Mengupdate diskon stan
+- ✅ [Update Diskon Menu](6-Diskon/Update%20Diskon%20Menu.bru) - Mengupdate diskon menu
 - ✅ [Delete Diskon](6-Diskon/Delete%20Diskon.bru) - Menghapus data diskon
+- ✅ [Delete Diskon Stan](6-Diskon/Delete%20Diskon%20Stan.bru) - Menghapus diskon stan
+- ✅ [Delete Diskon Menu](6-Diskon/Delete%20Diskon%20Menu.bru) - Menghapus diskon menu
+
+### 7. Cart (Keranjang Belanja)
+Mengelola keranjang belanja siswa sebelum checkout.
+- ✅ [Add to Cart](7-Cart/Add%20to%20Cart.bru) - Menambah item ke keranjang
+- ✅ [Get Cart](7-Cart/Get%20Cart.bru) - Mendapatkan isi keranjang siswa
+- ✅ [Update Cart Item](7-Cart/Update%20Cart%20Item.bru) - Mengupdate jumlah item di keranjang
+- ✅ [Remove from Cart](7-Cart/Remove%20from%20Cart.bru) - Menghapus item dari keranjang
+- ✅ [Clear Cart](7-Cart/Clear%20Cart.bru) - Mengosongkan seluruh keranjang
+- ✅ [Checkout Cart](7-Cart/Checkout%20Cart.bru) - Checkout keranjang ke transaksi
+
+### 8. Auth (Autentikasi)
+Mengelola autentikasi dan otorisasi pengguna.
+- ✅ [Register](8-Auth/Register.bru) - Registrasi pengguna baru
+- ✅ [Register Admin Stan](8-Auth/Register%20Admin%20Stan.bru) - Registrasi admin stan dengan stan
+- ✅ [Login](8-Auth/Login.bru) - Login dan dapatkan token JWT
+- ✅ [Get Profile](8-Auth/Profile.bru) - Mendapatkan profil pengguna yang terautentikasi
+
+### 9. Activity Logs (Log Aktivitas)
+Mengelola dan memonitor log aktivitas sistem.
+- ✅ [Get User Activities](9-Activity-Logs/Get-User-Activities.bru) - Mendapatkan aktivitas user tertentu
+- ✅ [Get All Activities](9-Activity-Logs/Get-All-Activities.bru) - Mendapatkan semua aktivitas dengan filter
+- ✅ [Get Activities by Date Range](9-Activity-Logs/Get-Activities-by-Date-Range.bru) - Mendapatkan aktivitas berdasarkan rentang tanggal
+- ✅ [Get Activity Stats](9-Activity-Logs/Get-Activity-Stats.bru) - Mendapatkan statistik aktivitas
+- ✅ [Clean Old Logs](9-Activity-Logs/Clean-Old-Logs.bru) - Membersihkan log aktivitas lama
 
 ## 🚀 Cara Menggunakan
 
@@ -92,34 +125,64 @@ Setiap request memiliki struktur standar:
 
 ## 🔄 Workflow Testing Rekomendasi
 
-1. **Setup Data Awal**
+1. **Setup Autentikasi**
+   - Register User (untuk Admin Stan dan Siswa)
+   - Login untuk mendapatkan JWT Token
+   - Get Profile untuk verifikasi token
+
+2. **Setup Data Awal**
    - Create User (untuk Admin Stan dan Siswa)
    - Create Stan (dengan user Admin Stan)
    - Create Siswa (dengan user Siswa)
 
-2. **Setup Menu & Diskon**
+3. **Setup Menu & Diskon**
    - Create Menu (untuk setiap Stan)
-   - Create Diskon (jika diperlukan)
+   - Create Diskon Global (opsional, oleh superadmin)
+   - Create Diskon Stan (oleh admin stan)
+   - Create Diskon Menu (untuk menu tertentu)
 
-3. **Testing Transaksi**
-   - Create Transaksi (dengan siswa dan menu yang sudah ada)
+4. **Testing Cart & Transaksi**
+   - Add to Cart (siswa menambah item ke keranjang)
+   - Get Cart (melihat isi keranjang)
+   - Update Cart Item (mengubah jumlah item)
+   - Checkout Cart (konversi ke transaksi)
+   - Create Transaksi (konfirmasi transaksi)
    - Get Transaksi (untuk verifikasi)
    - Update Transaksi Status
 
-4. **Testing Fitur Lainnya**
+5. **Testing Activity Logs**
+   - Get User Activities (melihat aktivitas user)
+   - Get All Activities (monitor sistem)
+   - Get Activity Stats (dashboard metrics)
+   - Get Activities by Date Range (analisis historis)
+
+6. **Testing Fitur Lainnya**
    - Update & Delete untuk setiap entitas
    - Get dengan filter (by ID, by Stan, etc)
+   - Remove from Cart & Clear Cart
+   - Clean Old Logs (maintenance)
 
 ## 📝 Tipe Role User
 
-- **admin_stan**: Pengguna yang mengelola stan/toko
-- **siswa**: Pengguna yang bertransaksi (membeli)
+- **superadmin**: Pengguna dengan akses penuh ke semua fitur termasuk diskon global
+- **admin_stan**: Pengguna yang mengelola stan/toko, menu, dan diskon per stan
+- **siswa**: Pengguna yang bertransaksi (membeli), mengelola cart, dan melihat aktivitas
 
 ## 💾 Tips & Tricks
 
 - Gunakan environment variables di Bruno untuk menyimpan ID yang sering digunakan
 - Setiap test memiliki assertions untuk validasi response
 - Lihat console Bruno untuk melihat error detail jika ada
+- **Autentikasi**: Simpan JWT token di environment variable `{{token}}` untuk request yang memerlukan auth
+- **Cart**: Gunakan `Add to Cart` untuk menambah item, lalu `Get Cart` untuk verifikasi sebelum checkout
+- **Diskon**: Perhatikan perbedaan antara diskon global (superadmin) dan diskon per stan (admin_stan)
+- **Activity Logs**: Gunakan endpoint stats untuk dashboard metrics dan monitoring sistem
+- **Image Upload**: Gunakan format Base64 untuk upload foto siswa dan menu (lihat README_IMAGE_UPLOAD.md)
+
+## 📚 Dokumentasi Tambahan
+
+- **[Diskon 2 Level](DISKON_2_LEVEL.md)** - Dokumentasi lengkap sistem diskon dengan 2 level (Global & Per Stan)
+- **[Image Upload](README_IMAGE_UPLOAD.md)** - Panduan upload gambar menggunakan format Base64
 
 ---
 

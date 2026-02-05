@@ -15,13 +15,15 @@ const (
 )
 
 type User struct {
-	ID           uint     `json:"id" gorm:"primaryKey"`
-	Username     string   `json:"username" gorm:"type:varchar(100);unique;not null"`
-	Password     string   `json:"-" gorm:"type:varchar(100);not null"`
-	Role         UserRole `json:"role" gorm:"type:varchar(20);not null"`
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	DeletedAt    gorm.DeletedAt `gorm:"index"`
+	ID           uint           `json:"id" gorm:"column:id;primaryKey"`
+	Username     string         `json:"username" gorm:"column:username;type:varchar(100);unique;not null"`
+	Password     string         `json:"-" gorm:"column:password;type:varchar(100);not null"`
+	Role         UserRole       `json:"role" gorm:"column:role;type:varchar(20);not null"`
+	CreatedBy    string         `json:"created_by" gorm:"column:created_by"`
+	UpdatedBy    string         `json:"updated_by" gorm:"column:updated_by"`
+	CreatedAt    time.Time      `json:"created_at" gorm:"column:created_at"`
+	UpdatedAt    time.Time      `json:"updated_at" gorm:"column:updated_at"`
+	DeletedAt    gorm.DeletedAt `json:"deleted_at" gorm:"column:deleted_at;index"`
 	
 	// Relations
 	Stan  *Stan  `json:"stan,omitempty" gorm:"foreignKey:IDUser"`

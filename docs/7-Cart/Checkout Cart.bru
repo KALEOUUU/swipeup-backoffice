@@ -5,8 +5,13 @@ meta {
 }
 
 post {
-  url: http://localhost:8080/api/cart/checkout
+  url: http://localhost:8080/api/student/cart/checkout
   body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 body:json {

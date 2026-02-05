@@ -5,8 +5,13 @@ meta {
 }
 
 put {
-  url: http://localhost:8080/api/transaksi/1/status
+  url: http://localhost:8080/api/admin-stan/transactions/1/status
   body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 body:json {

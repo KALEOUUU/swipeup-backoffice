@@ -5,7 +5,12 @@ meta {
 }
 
 get {
-  url: http://localhost:8080/api/siswa/1
+  url: http://localhost:8080/api/superadmin/siswa/1
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 tests {

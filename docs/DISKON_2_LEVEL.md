@@ -1,8 +1,8 @@
-# Fitur Diskon 2 Level
+# Fitur Diskon Multi Level
 
 ## 📋 Overview
 
-Sistem diskon mendukung 2 level pengaturan:
+Sistem diskon mendukung 3 level pengaturan:
 
 ### 1. **Diskon Global** (Superadmin)
 - Diatur oleh superadmin
@@ -16,6 +16,12 @@ Sistem diskon mendukung 2 level pengaturan:
 - `tipe_diskon: "stan"`
 - `id_stan: <ID_STAN>`
 
+### 3. **Diskon Per Menu** (Admin Stan)
+- Diatur oleh admin stan masing-masing
+- Berlaku **hanya untuk menu tertentu**
+- `tipe_diskon: "menu"`
+- `id_menu: <ID_MENU>`
+
 ## 🔑 Field Model Diskon
 
 ```json
@@ -25,9 +31,11 @@ Sistem diskon mendukung 2 level pengaturan:
   "persentase_diskon": 15,
   "tanggal_awal": "2025-03-01T00:00:00Z",
   "tanggal_akhir": "2025-03-31T23:59:59Z",
-  "tipe_diskon": "global",  // "global" atau "stan"
-  "id_stan": null,           // null untuk global, ID untuk stan
-  "stan": null               // relasi ke stan (jika ada)
+  "tipe_diskon": "global",  // "global", "stan", atau "menu"
+  "id_stan": null,           // null untuk global/menu, ID untuk stan
+  "id_menu": null,           // null untuk global/stan, ID untuk menu
+  "stan": null,              // relasi ke stan (jika ada)
+  "menu": null               // relasi ke menu (jika ada)
 }
 ```
 
@@ -49,7 +57,7 @@ Content-Type: application/json
 
 ### Create Diskon Per Stan
 ```http
-POST /api/diskon
+POST /api/diskon/stan
 Content-Type: application/json
 
 {
@@ -57,8 +65,21 @@ Content-Type: application/json
   "persentase_diskon": 15,
   "tanggal_awal": "2025-02-01T00:00:00Z",
   "tanggal_akhir": "2025-02-28T23:59:59Z",
-  "tipe_diskon": "stan",
   "id_stan": 1
+}
+```
+
+### Create Diskon Per Menu
+```http
+POST /api/diskon/menu
+Content-Type: application/json
+
+{
+  "nama_diskon": "Promo Nasi Goreng",
+  "persentase_diskon": 20,
+  "tanggal_awal": "2025-02-01T00:00:00Z",
+  "tanggal_akhir": "2025-02-28T23:59:59Z",
+  "id_menu": 1
 }
 ```
 
@@ -81,6 +102,22 @@ Mengembalikan:
 - Diskon **global** yang sedang aktif
 - Diskon **stan** yang sedang aktif untuk stan tersebut
 
+### Update Diskon
+```http
+PUT /api/diskon/{id}
+Content-Type: application/json
+
+{
+  "nama_diskon": "Updated Promo",
+  "persentase_diskon": 25
+}
+```
+
+### Delete Diskon
+```http
+DELETE /api/diskon/{id}
+```
+
 ## 📊 Use Cases
 
 ### 1. Superadmin membuat diskon global
@@ -102,13 +139,24 @@ Mengembalikan:
   "persentase_diskon": 20,
   "tanggal_awal": "2025-06-01T00:00:00Z",
   "tanggal_akhir": "2025-06-30T23:59:59Z",
-  "tipe_diskon": "stan",
   "id_stan": 1
 }
 ```
 → Berlaku **hanya untuk Stan A**
 
-### 3. Siswa melihat diskon untuk Stan A
+### 3. Admin Stan A membuat diskon per menu
+```json
+{
+  "nama_diskon": "Promo Nasi Goreng Spesial",
+  "persentase_diskon": 25,
+  "tanggal_awal": "2025-06-01T00:00:00Z",
+  "tanggal_akhir": "2025-06-30T23:59:59Z",
+  "id_menu": 1
+}
+```
+→ Berlaku **hanya untuk Menu dengan ID 1**
+
+### 4. Siswa melihat diskon untuk Stan A
 `GET /api/diskon/active-by-stan?stan_id=1`
 
 Akan mendapat:
@@ -117,10 +165,11 @@ Akan mendapat:
 
 ## ⚠️ Validasi
 
-1. **Diskon global**: `id_stan` harus `null`
-2. **Diskon stan**: `id_stan` harus diisi dan valid
-3. **Format tanggal**: Gunakan RFC3339 (`YYYY-MM-DDTHH:MM:SSZ`)
-4. **Persentase**: 0-100
+1. **Diskon global**: `id_stan` dan `id_menu` harus `null`
+2. **Diskon stan**: `id_stan` harus diisi dan valid, `id_menu` harus `null`
+3. **Diskon menu**: `id_menu` harus diisi dan valid, `id_stan` harus `null`
+4. **Format tanggal**: Gunakan RFC3339 (`YYYY-MM-DDTHH:MM:SSZ`)
+5. **Persentase**: 0-100
 
 ## 🔄 Migration
 
@@ -136,4 +185,5 @@ Atau restart aplikasi (GORM auto-migrate akan menambahkan column baru).
 - Diskon lama akan otomatis menjadi diskon global
 - Stan tidak bisa edit/delete diskon global
 - Superadmin bisa edit/delete semua diskon
-- Diskon bisa di-assign ke menu via endpoint assign
+- Diskon per menu memberikan diskon spesifik untuk menu tertentu
+- Prioritas diskon: Menu > Stan > Global (diskon menu akan menggantikan diskon lain untuk menu tersebut)

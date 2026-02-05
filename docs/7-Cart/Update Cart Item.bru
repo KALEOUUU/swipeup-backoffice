@@ -5,8 +5,13 @@ meta {
 }
 
 put {
-  url: http://localhost:8080/api/cart/1
+  url: http://localhost:8080/api/student/cart/1
   body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 body:json {

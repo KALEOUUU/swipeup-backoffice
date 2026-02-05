@@ -5,7 +5,12 @@ meta {
 }
 
 get {
-  url: http://localhost:8080/api/stan/by-user?user_id=2
+  url: http://localhost:8080/api/admin-stan/stan/profile
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 tests {

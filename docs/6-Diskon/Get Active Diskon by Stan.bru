@@ -5,7 +5,12 @@ meta {
 }
 
 get {
-  url: http://localhost:8080/api/diskon/active-by-stan?stan_id=1
+  url: http://localhost:8080/api/admin-stan/discounts/active
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 tests {

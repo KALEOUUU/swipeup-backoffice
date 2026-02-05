@@ -5,8 +5,13 @@ meta {
 }
 
 put {
-  url: http://localhost:8080/api/diskon/1
+  url: http://localhost:8080/api/admin-stan/discounts/1
   body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 body:json {

@@ -44,8 +44,9 @@ type RegisterAdminStanRequest struct {
 }
 
 type AuthResponse struct {
-	User  models.User `json:"user"`
-	Token string      `json:"token"`
+	User   models.User `json:"user"`
+	Token  string      `json:"token"`
+	StanID *uint       `json:"stan_id,omitempty"` // Only for admin_stan role
 }
 
 func NewAuthService(db *gorm.DB, jwtSecret string) *AuthService {
@@ -156,9 +157,19 @@ func (s *AuthService) Login(req LoginRequest) (*AuthResponse, error) {
 	// Remove password from response
 	user.Password = ""
 
+	// Get stan_id for admin_stan users
+	var stanID *uint
+	if user.Role == models.RoleAdminStan {
+		var stan models.Stan
+		if err := s.db.Where("id_user = ?", user.ID).First(&stan).Error; err == nil {
+			stanID = &stan.ID
+		}
+	}
+
 	return &AuthResponse{
-		User:  user,
-		Token: token,
+		User:   user,
+		Token:  token,
+		StanID: stanID,
 	}, nil
 }
 

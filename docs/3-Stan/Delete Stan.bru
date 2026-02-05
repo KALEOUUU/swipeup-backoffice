@@ -5,7 +5,12 @@ meta {
 }
 
 delete {
-  url: http://localhost:8080/api/stan/1
+  url: http://localhost:8080/api/superadmin/stan/1
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 tests {
