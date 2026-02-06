@@ -1,0 +1,23 @@
+meta {
+  name: Search Menu by Name
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8080/api/public/menu/search?name=nasi
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Response data is array", function() {
+    expect(res.getBody().data).to.be.an('array');
+  });
+}

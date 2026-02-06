@@ -1,0 +1,34 @@
+meta {
+  name: Register Admin Stan
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8080/api/auth/register-admin-stan
+  body: json
+}
+
+body:json {
+  {
+    "username": "admin_stan_001",
+    "password": "password123",
+    "nama_stan": "Warung Makan Sejahtera",
+    "nama_pemilik": "Budi Santoso",
+    "telp": "081234567890"
+  }
+}
+
+tests {
+  test("Status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("User has admin_stan role", function() {
+    expect(res.getBody().data.role).to.equal("admin_stan");
+  });
+}

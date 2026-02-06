@@ -1,0 +1,36 @@
+meta {
+  name: Get All Menu
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/api/admin-stan/menu
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Response data is array", function() {
+    expect(res.getBody().data).to.be.an('array');
+  });
+  
+  test("Pagination metadata exists", function() {
+    expect(res.getBody().pagination).to.exist;
+    expect(res.getBody().pagination.page).to.be.a('number');
+    expect(res.getBody().pagination.limit).to.be.a('number');
+    expect(res.getBody().pagination.total).to.be.a('number');
+    expect(res.getBody().pagination.total_pages).to.be.a('number');
+  });
+}

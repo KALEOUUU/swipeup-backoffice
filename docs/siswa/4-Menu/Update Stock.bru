@@ -1,0 +1,39 @@
+meta {
+  name: Update Stock
+  type: http
+  seq: 9
+}
+
+put {
+  url: http://localhost:8080/api/menu/:id/stock
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 1
+}
+
+auth:bearer {
+  token: {{admin_stan_token}}
+}
+
+body:json {
+  {
+    "stock": 50
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Stock is updated", function() {
+    expect(res.getBody().data.stock).to.equal(50);
+  });
+  
+  test("Menu is available", function() {
+    expect(res.getBody().data.is_available).to.equal(true);
+  });
+}

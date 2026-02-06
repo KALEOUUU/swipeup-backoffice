@@ -1,0 +1,82 @@
+meta {
+  name: Create Menu
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/api/admin-stan/menu
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "nama_makanan": "Nasi Goreng",
+    "harga": 15000,
+    "jenis": "makanan",
+    "deskripsi": "Nasi goreng spesial dengan bumbu khas",
+    "stock": 50,
+    "foto": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlbaWmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKAP/2Q=="
+  }
+}
+
+docs {
+  # Create Menu with Base64 Image
+  
+  ## Important Notes
+  - `id_stan` field is not required in the payload - it will be automatically set based on the authenticated admin_stan user's stan
+  - Only users with role "admin_stan" can create menu items
+  - The stan ID is retrieved from the user's associated stan record
+  
+  ## Image Field (foto)
+  The `foto` field accepts:
+  - Base64 encoded image string with data URI format: `data:image/jpeg;base64,<base64_string>`
+  - Base64 encoded image string without data URI: `<base64_string>`
+  - Regular URL (backward compatible): `https://example.com/nasi-goreng.jpg`
+  
+  ## Supported Image Formats
+  - PNG
+  - JPEG/JPG
+  - GIF
+  - WebP
+  
+  ## Image Storage
+  When base64 is provided:
+  - Image is decoded and saved to filesystem
+  - Unique filename is generated (UUID)
+  - Path is stored in database: `uploads/images/<uuid>.<ext>`
+  - Image accessible via: `http://localhost:8080/uploads/images/<uuid>.<ext>`
+  
+  ## Jenis Field
+  Valid values: "makanan", "minuman"
+  
+  ## Stock Field
+  The `stock` field specifies the initial stock quantity for the menu item:
+  - Type: integer
+  - Default: 0 (if not provided)
+  - Minimum: 0
+  - Used for inventory management
+}
+
+tests {
+  test("Status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Response data has ID", function() {
+    expect(res.getBody().data.id).to.exist;
+  });
+  
+  test("Nama Makanan matches request", function() {
+    expect(res.getBody().data.nama_makanan).to.equal("Nasi Goreng");
+  });
+}

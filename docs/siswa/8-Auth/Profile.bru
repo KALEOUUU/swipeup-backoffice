@@ -1,0 +1,58 @@
+meta {
+  name: Get Profile
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:8080/api/auth/profile
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+
+  test("Response has user data", function() {
+    expect(res.getBody().data).to.exist;
+  });
+
+  test("User has required fields", function() {
+    expect(res.getBody().data.id).to.exist;
+    expect(res.getBody().data.username).to.exist;
+    expect(res.getBody().data.role).to.exist;
+  });
+}
+
+docs {
+  # Get User Profile
+
+  Retrieves authenticated user's profile information.
+
+  ## Authentication:
+  Requires Bearer token in Authorization header.
+
+  ## Response Data:
+  - `id`: User ID
+  - `username`: Username
+  - `role`: User role (admin_stan or siswa)
+  - `created_at`: Account creation timestamp
+  - `updated_at`: Last update timestamp
+
+  ## Usage:
+  Use this endpoint to get current user information after login.
+
+  ## Error Responses:
+  - No token: "authorization header required"
+  - Invalid token: "invalid token"
+  - Expired token: "token expired"
+}

@@ -1,0 +1,107 @@
+meta {
+  name: Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/api/auth/login
+  body: json
+}
+
+body:json {
+  {
+    "username": "siswa001",
+    "password": "password123"
+  }
+}
+
+docs {
+  # Login
+  
+  Authenticate user and get access token.
+  
+  ## Endpoint
+  POST /api/auth/login
+  
+  ## Request Body
+  - `username` (string, required): Username
+  - `password` (string, required): Password
+  
+  ## Response
+  Returns user data, JWT token, and stan_id (for admin_stan only):
+  ```json
+  {
+    "success": true,
+    "message": "Login successful",
+    "data": {
+      "user": {
+        "id": 1,
+        "username": "admin_stan1",
+        "role": "admin_stan"
+      },
+      "token": "eyJhbGciOiJIUzI1NiIs...",
+      "stan_id": 1
+    }
+  }
+  ```
+  
+  ## Stan ID
+  - **admin_stan**: Returns `stan_id` to manage their stan's discounts and menus
+  - **superadmin/siswa**: `stan_id` will be null or omitted
+  
+  ## Notes
+  - Token expires in 24 hours
+  - Use token in Authorization header: `Bearer <token>`
+  - Stan ID is essential for admin_stan to manage stan-specific discounts
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+
+  test("Response has user data", function() {
+    expect(res.getBody().data.user).to.exist;
+  });
+
+  test("Response has token", function() {
+    expect(res.getBody().data.token).to.be.a('string');
+  });
+
+  test("Token is not empty", function() {
+    expect(res.getBody().data.token.length).to.be.greaterThan(0);
+  });
+}
+
+docs {
+  # User Login
+
+  Authenticates user credentials and returns JWT token for API access.
+
+  ## Request Body:
+  - `username` (required): User's username
+  - `password` (required): User's password
+
+  ## Response Data:
+  - `user`: User information (without password)
+  - `token`: JWT token for authentication
+
+  ## Token Usage:
+  Include token in Authorization header for protected routes:
+  ```
+  Authorization: Bearer <token>
+  ```
+
+  ## Token Expiry:
+  - Tokens expire after 24 hours
+  - Need to login again after expiry
+
+  ## Error Responses:
+  - Invalid username/password: "invalid username or password"
+  - Account not found: "invalid username or password"
+}

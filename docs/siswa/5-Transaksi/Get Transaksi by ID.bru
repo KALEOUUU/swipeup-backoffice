@@ -1,0 +1,23 @@
+meta {
+  name: Get Transaksi by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:8080/api/transaksi/1
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Response data has total_harga", function() {
+    expect(res.getBody().data.total_harga).to.exist;
+  });
+}

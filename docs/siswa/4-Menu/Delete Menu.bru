@@ -1,0 +1,24 @@
+meta {
+  name: Delete Menu
+  type: http
+  seq: 7
+}
+
+delete {
+  url: http://localhost:8080/api/admin-stan/menu/1
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response success is true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+}
